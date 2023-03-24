@@ -52,7 +52,15 @@ class Validator:
 class Blockchain:
     def __init__(self):
         self.chain = [self.create_genesis_block()]
+        self.pending_transactions = []
         self.validators = []
+    def create_transaction(self, sender, recipient, amount):
+        transaction = Transaction(sender, recipient, amount)
+        self.pending_transactions.append(transaction)
+    def process_transactions(self):
+        if len(self.pending_transactions) > 0:
+            self.add_block(self.pending_transactions)
+            self.pending_transactions = []
 
     def create_genesis_block(self):
         return Block(0, time.time(), "Genesis Block", "0")
@@ -97,7 +105,12 @@ def main():
     print("Validator 1 balance:", student_blockchain.validators[0].balance)
     print("Validator 2 balance:", student_blockchain.validators[1].balance)
     
+    student_blockchain.create_transaction("Alice", "Bob", 50)
+    student_blockchain.create_transaction("Bob", "Charlie", 25)
+    student_blockchain.process_transactions()
 
+    print("Validator 1 balance:", student_blockchain.validators[0].balance)
+    print("Validator 2 balance:", student_blockchain.validators[1].balance)
     print("Blockchain valid?", student_blockchain.is_valid())
 
 if __name__ == "__main__":
