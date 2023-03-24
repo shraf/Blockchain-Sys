@@ -3,14 +3,11 @@ import hashlib
 import time
 import random
 
-class Transaction:
-    def __init__(self, sender, recipient, amount):
-        self.sender = sender
-        self.recipient = recipient
-        self.amount = amount
-
-    def __repr__(self):
-        return f"{self.sender} -> {self.recipient}: {self.amount}"
+class Course:
+    def __init__(self, course_id, course_name, marks):
+        self.course_id = course_id
+        self.course_name = course_name
+        self.marks = marks
 
 
 class Student:
@@ -28,8 +25,6 @@ class Block:
         self.previous_hash = previous_hash
         self.hash = self.calculate_hash()
         
-    def add_transaction(self, transaction):
-        self.transactions.append(transaction)
 
 
     def calculate_hash(self):
@@ -52,16 +47,8 @@ class Validator:
 class Blockchain:
     def __init__(self):
         self.chain = [self.create_genesis_block()]
-        self.pending_transactions = []
         self.validators = []
-    def create_transaction(self, sender, recipient, amount):
-        transaction = Transaction(sender, recipient, amount)
-        self.pending_transactions.append(transaction)
-    def process_transactions(self):
-        if len(self.pending_transactions) > 0:
-            self.add_block(self.pending_transactions)
-            self.pending_transactions = []
-
+    
     def create_genesis_block(self):
         return Block(0, time.time(), "Genesis Block", "0")
 
@@ -105,9 +92,6 @@ def main():
     print("Validator 1 balance:", student_blockchain.validators[0].balance)
     print("Validator 2 balance:", student_blockchain.validators[1].balance)
     
-    student_blockchain.create_transaction("Alice", "Bob", 50)
-    student_blockchain.create_transaction("Bob", "Charlie", 25)
-    student_blockchain.process_transactions()
 
     print("Validator 1 balance:", student_blockchain.validators[0].balance)
     print("Validator 2 balance:", student_blockchain.validators[1].balance)
