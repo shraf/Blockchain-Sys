@@ -2,13 +2,35 @@ from web3 import Web3
 import hashlib
 import time
 import random
+import json
+
+def assign_marks(self, student_id, course_id, marks):
+    student = None
+    for block in self.chain:
+        print('55555555555555555555555555555555555555555555555555555')
+        print('55555555555555555555555555555555555555555555555555555')
+        print('55555555555555555555555555555555555555555555555555555')
+        print(block.data)
+        print('55555555555555555555555555555555555555555555555555555')
+        print('55555555555555555555555555555555555555555555555555555')
+        print('55555555555555555555555555555555555555555555555555555')
+
+        # if block.data.get("id") == student_id:
+        #     student = block.data
+        #     break
+
+    if student:
+        student["courses"][course_id] = marks
+        self.add_block(student)
+    else:
+        print(f"Student with ID {student_id} not found.")
+
 
 class Course:
     def __init__(self, course_id, course_name, marks):
         self.course_id = course_id
         self.course_name = course_name
         self.marks = marks
-
 
 class Student:
     def __init__(self, id, name, age, courses):
@@ -24,8 +46,6 @@ class Block:
         self.data = data
         self.previous_hash = previous_hash
         self.hash = self.calculate_hash()
-        
-
 
     def calculate_hash(self):
         return hashlib.sha256(f"{self.index}{self.timestamp}{self.data}{self.previous_hash}".encode('utf-8')).hexdigest()
@@ -48,7 +68,7 @@ class Blockchain:
     def __init__(self):
         self.chain = [self.create_genesis_block()]
         self.validators = []
-    
+    assign_marks = assign_marks
     def create_genesis_block(self):
         return Block(0, time.time(), "Genesis Block", "0")
 
@@ -79,11 +99,17 @@ class Blockchain:
 
 def main():
     student_blockchain = Blockchain()
+    math_course = Course("MATH101", "Math", {})
+    physics_course = Course("PHYS101", "Physics", {})
+
     student_blockchain.add_validator("0xValidator1", 10)
     student_blockchain.add_validator("0xValidator2", 20)
 
-    student1 = Student("001", "Alice", 20, ["Math", "Physics"])
+    student1 = Student("001", "Alice", 20, {})
     student_blockchain.add_block(student1.__dict__)
+    student_blockchain.assign_marks("001", "MATH101", 90)
+    student_blockchain.assign_marks("001", "PHYS101", 85)
+
     print("Validator 1 balance:", student_blockchain.validators[0].balance)
     print("Validator 2 balance:", student_blockchain.validators[1].balance)
 
