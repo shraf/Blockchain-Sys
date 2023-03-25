@@ -21,19 +21,6 @@ class Block:
     def calculate_hash(self):
         return hashlib.sha256(f"{self.index}{self.timestamp}{self.data}{self.previous_hash}".encode('utf-8')).hexdigest()
 
-class Validator:
-    def __init__(self, address, stake):
-        self.address = address
-        self.stake = stake
-        self.balance = 0
-
-    def validate_block(self, block, previous_block):
-        if block.previous_hash != previous_block.hash:
-            return False
-        if block.hash != block.calculate_hash():
-            return False
-        return True
-
 class Blockchain:
     def __init__(self):
         self.chain = [self.create_genesis_block()]
@@ -85,6 +72,20 @@ class Blockchain:
                     student = block.data
                     break
         return student
+
+class Validator:
+    def __init__(self, address, stake):
+        self.address = address
+        self.stake = stake
+        self.balance = 0
+
+    def validate_block(self, block, previous_block):
+        if block.previous_hash != previous_block.hash:
+            return False
+        if block.hash != block.calculate_hash():
+            return False
+        return True
+
 
 def main():
     student_blockchain = Blockchain()
