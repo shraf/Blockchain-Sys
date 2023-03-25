@@ -1,28 +1,7 @@
 import hashlib
 import time
 import random
-
-def assign_marks(self, student_id, course_id, marks):
-    student = None
-    for block in self.chain:
-        if block.data != 'Genesis Block':
-            if block.data.get("id") == student_id:
-                student = block.data
-                break
-
-    if student:
-        if course_id not in student["courses"]:
-            student["courses"][course_id] = 0
-        student["courses"][course_id] += marks
-        self.add_block(student)
-    else:
-        print(f"Student with ID {student_id} not found.")
-
-class Course:
-    def __init__(self, course_id, course_name, marks):
-        self.course_id = course_id
-        self.course_name = course_name
-        self.marks = marks
+import copy 
 
 class Student:
     def __init__(self, id, name, age, courses):
@@ -46,7 +25,7 @@ class Validator:
     def __init__(self, address, stake):
         self.address = address
         self.stake = stake
-        self.balance = 0  # Add balance attribute to store rewards
+        self.balance = 0
 
     def validate_block(self, block, previous_block):
         if block.previous_hash != previous_block.hash:
@@ -59,9 +38,27 @@ class Blockchain:
     def __init__(self):
         self.chain = [self.create_genesis_block()]
         self.validators = []
-    assign_marks = assign_marks
+
+    def assign_marks(self, student_id, course_id, marks):
+        student = None
+        for block in self.chain:
+            if block.data != 'Genesis Block':
+                if block.data.get("id") == student_id:
+                    student = block.data
+                    break
+
+        if student:
+            updated_student = copy.deepcopy(student)
+
+            if course_id not in updated_student["courses"]:
+                updated_student["courses"][course_id] = 0
+            updated_student["courses"][course_id] += marks
+            self.add_block(updated_student)
+        else:
+            print(f"Student with ID {student_id} not found.")
+
     def create_genesis_block(self):
-        return Block(0, time.time(), "Genesis Block", "0")
+        return Block(0, int(time.time()), "Genesis Block", "0")
 
     def add_validator(self, address, stake):
         self.validators.append(Validator(address, stake))
@@ -73,11 +70,10 @@ class Blockchain:
 
     def add_block(self, data):
         validator = self.select_validator()
-        new_block = Block(len(self.chain), time.time(), data, self.chain[-1].hash)
-
+        new_block = Block(len(self.chain), int(time.time()), data, self.chain[-1].hash)
         if validator.validate_block(new_block, self.chain[-1]):
             self.chain.append(new_block)
-            validator.balance += 10  # Reward the validator with a fixed amount (e.g., 10)
+            validator.balance += 10
 
     def is_valid(self):
         validator = self.select_validator()
@@ -87,6 +83,14 @@ class Blockchain:
             if not validator.validate_block(current_block, previous_block):
                 return False
         return True
+    
+    def get_student_data(self,student_id):
+        for block in reversed(self.chain):
+            if block.data != 'Genesis Block':
+                if block.data.get("id") == student_id:
+                    student = block.data
+                    break
+        return student
 
 def main():
     student_blockchain = Blockchain()
@@ -99,14 +103,15 @@ def main():
     student_blockchain.assign_marks("001", "PHYS101", 85)
     print("Validator 1 balance:", student_blockchain.validators[0].balance)
     print("Validator 2 balance:", student_blockchain.validators[1].balance)
-    student2 = Student("002", "Bob", 22, ["Chemistry", "Biology"])
+    student2 = Student("002", "Bob", 22, {"Chemistry": 0, "Biology": 0})
     student_blockchain.add_block(student2.__dict__)
     print("Validator 1 balance:", student_blockchain.validators[0].balance)
     print("Validator 2 balance:", student_blockchain.validators[1].balance)
-    print("Validator 1 balance:", student_blockchain.validators[0].balance)
-    print("Validator 2 balance:", student_blockchain.validators[1].balance)
-    print(student1.courses)
-    print(student2.courses)
+    studentone = student_blockchain.get_student_data("001")
+    studenttwo = student_blockchain.get_student_data("002")
+    print(studentone)
+    print(studentone['courses'])
+    print(studenttwo['courses'])
     print("Blockchain valid?", student_blockchain.is_valid())
 
 if __name__ == "__main__":
