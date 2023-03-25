@@ -40,16 +40,10 @@ class Blockchain:
         self.validators = []
 
     def assign_marks(self, student_id, course_id, marks):
-        student = None
-        for block in self.chain:
-            if block.data != 'Genesis Block':
-                if block.data.get("id") == student_id:
-                    student = block.data
-                    break
-
+        student = self.get_student_data(student_id)
         if student:
             updated_student = copy.deepcopy(student)
-
+            # updated_student = student.copy()
             if course_id not in updated_student["courses"]:
                 updated_student["courses"][course_id] = 0
             updated_student["courses"][course_id] += marks
