@@ -30,6 +30,7 @@ contract ProofOfStake {
             previousHash: 0,
             hash: 0
         });
+        // Add genisis block
         genesisBlock.hash = keccak256(
             abi.encode(
                 genesisBlock.id,
@@ -42,39 +43,16 @@ contract ProofOfStake {
     }
 
     function addValidator(address _address, uint256 _stake) public {
+        //adds validator
         validators.push(
             Validator({validatorAddress: _address, stake: _stake, balance: 0})
         );
     }
 
-    function selectValidator() public view returns (Validator memory) {
-        uint256 totalStake = 0;
-        for (uint256 i = 0; i < validators.length; i++) {
-            totalStake += validators[i].stake;
-        }
-        bytes memory packedData = abi.encodePacked(
-            block.difficulty,
-            block.timestamp
-        );
-        for (uint256 i = 0; i < validators.length; i++) {
-            packedData = abi.encodePacked(
-                packedData,
-                validators[i].validatorAddress,
-                validators[i].stake
-            );
-        }
-        uint256 randomValue = uint256(keccak256(packedData)) % totalStake;
-        uint256 cumulativeStake = 0;
-        for (uint256 i = 0; i < validators.length; i++) {
-            cumulativeStake += validators[i].stake;
-            if (randomValue < cumulativeStake) {
-                return validators[i];
-            }
-        }
-    }
-
     function addBlock(string memory _data) public {
-        Validator memory validator = selectValidator();
+        //select validator
+        uint256 index = selectValidatorIndex();
+        Validator storage validator = validators[index];
         Block memory newBlock = Block(
             blocks.length,
             block.timestamp,
@@ -90,9 +68,41 @@ contract ProofOfStake {
                 newBlock.previousHash
             )
         );
+        //validates block based on validator
         if (validateBlock(validator, newBlock, blocks[blocks.length - 1])) {
             blocks.push(newBlock);
             validator.balance += 10;
+        }
+    }
+
+    function selectValidatorIndex() public view returns (uint256) {
+        // selecting validators based on their stake
+
+        //get the total stake
+        uint256 totalStake = 0;
+        for (uint256 i = 0; i < validators.length; i++) {
+            totalStake += validators[i].stake;
+        }
+        // get random number based on timestamp and difficulty
+        bytes memory packedData = abi.encodePacked(
+            block.difficulty,
+            block.timestamp
+        );
+        for (uint256 i = 0; i < validators.length; i++) {
+            packedData = abi.encodePacked(
+                packedData,
+                validators[i].validatorAddress,
+                validators[i].stake
+            );
+        }
+        // select random index based on total stake mod
+        uint256 randomValue = uint256(keccak256(packedData)) % totalStake;
+        uint256 cumulativeStake = 0;
+        for (uint256 i = 0; i < validators.length; i++) {
+            cumulativeStake += validators[i].stake;
+            if (randomValue < cumulativeStake) {
+                return i;
+            }
         }
     }
 
